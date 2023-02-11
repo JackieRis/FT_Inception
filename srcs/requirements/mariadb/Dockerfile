@@ -1,12 +1,9 @@
-FROM debian:buster
+FROM alpine:3.13
 
-RUN apt update -y; apt upgrade -y
-RUN apt install -y mariadb-server
+RUN	apk update && apk upgrade && apk add --no-cache \
+        mariadb \
+        mariadb-client
+        
+COPY tools/configure.sh /tmp/configure.sh
 
-COPY ./utiles
-
-ENTRYPOINT ["path"]
-
-EXPOSE
-
-CMD ["cmd"]
+ENTRYPOINT ["sh", "/tmp/configure.sh"]
