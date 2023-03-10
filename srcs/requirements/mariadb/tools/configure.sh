@@ -1,9 +1,13 @@
 #!/bin/sh
 
+
 if [ ! -d "/run/mysqld" ]; then
 	mkdir -p /run/mysqld
 	chown -R mysql:mysql /run/mysqld
 fi
+
+service mysql start
+
 
 if [ ! -d "/var/lib/mysql/mysql" ]; then
 	
@@ -41,7 +45,19 @@ EOF
 fi
 
 # allow remote connections
-sed -i "s|skip-networking|# skip-networking|g" /etc/my.cnf.d/mariadb-server.cnf
-sed -i "s|.*bind-address\s*=.*|bind-address=0.0.0.0|g" /etc/my.cnf.d/mariadb-server.cnf
+sed -i "s|skip-networking|# skip-networking|g" /etc/mysql/mariadb.conf.d/50-server.cnf
+sed -i "s|.*bind-address\s*=.*|bind-address=0.0.0.0|g" /etc/mysql/mariadb.conf.d/50-server.cnf
 
-exec /usr/bin/mysqld --user=mysql --console
+# exec /usr/bin/mysqld --user=mysql --console
+service mysql status
+# boucle pour faire tourner le container avec ps
+while true;
+do
+	ps aux | grep mysql | grep -q -v grep
+	PROCESS_1_STATUS=$?
+	if [ $PROCESS_1_STATUS -ne 0 ]; then
+		echo "mysql has already exited."
+		exit 1
+	fi
+	sleep 5
+done
