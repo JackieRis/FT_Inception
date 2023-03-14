@@ -12,7 +12,7 @@ clean: stop
 	@ rm -rf ~/Desktop/inception
 
 prune: clean
-	@ docker system prune -f
+	@ docker system prune -a
 
 reload: 
 	@ docker-compose -f srcs/docker-compose.yml up --build

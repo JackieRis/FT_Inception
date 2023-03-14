@@ -1,32 +1,26 @@
-version: '3'
-
-volumes:
-  mariadb_volume:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: $HOME/data/mariadb/
+version: '3.3'
 
 services:
   mariadb:
-    build: ./requirements/mariadb
     container_name: mariadb
-    image: debian:buster
+    build:
+      context: ./requirements/mariadb
+      args:
+          WP_DATABASE_NAME: wordpress
+          MYSQL_ROOT_PWD: nonsochemettere
+          WP_DATABASE_USR: jackieriz
+          WP_DATABASE_PWD: pass
     restart: always
     volumes:
-      - ./requirements/mariadb:/var/lib/mysql
-    env_file:
-      - "./.env"
+      - /home/jackieriz/data/mariadb:/var/lib/mysql
     ports:
       - "3306:3306"
     networks:
       - docker-network
 
   wordpress:
-    build: ./requirements/wordpress
     container_name: wordpress
-    image: debian:buster
+    build: ./requirements/wordpress
     restart: always
     depends_on:
       - mariadb

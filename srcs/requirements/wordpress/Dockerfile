@@ -1,13 +1,20 @@
 FROM debian:buster
 
-RUN apt-get update
-RUN apt-get install -y curl
-RUN apt-get install -y php7.3 php7.3-fpm php7.3-mysql php7.3-curl php7.3-gd php7.3-intl php7.3-mbstring php7.3-soap php7.3-xml php7.3-xmlrpc php7.3-zip
-
-COPY conf/conf.sh /conf.sh
-
-RUN chmod +x conf.sh
-
 EXPOSE 9000
 
-ENTRYPOINT [ "./conf.sh" ]
+RUN mkdir /var/www/
+RUN mkdir -p /var/run/ && mkdir /run/php
+
+RUN apt-get update -y && apt-get install -y php7.3 php-mysqli php-fpm wget mariadb-client
+
+RUN cd /var/www/ && wget http://fr.wordpress.org/latest-fr_FR.tar.gz && \
+	tar -xzvf latest-fr_FR.tar.gz && rm latest-fr_FR.tar.gz
+RUN mv /var/www/wordpress/ /var/www/html
+
+COPY ./config/www.conf /etc/php/7.3/fpm/pool.d/
+RUN	chown -R www-data:www-data /var/www/html
+RUN chmod -R -wx,u+rwX,g+rX,o+rX /var/www/html
+
+COPY ./config/wp-config.php ./wp-config.php
+
+CMD [ "/usr/sbin/php-fpm7.3", "-F" ]
