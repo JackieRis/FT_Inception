@@ -1,5 +1,19 @@
 version: '3.3'
 
+volumes:
+  volume_mariadb:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o:    'bind'
+      device: ${HOME}/data/mariadb
+  volume_wordpress:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o:    'bind'
+      device: ${HOME}/data/wordpress
+
 services:
   mariadb:
     container_name: mariadb
@@ -12,7 +26,7 @@ services:
           WP_DATABASE_PWD: pass
     restart: always
     volumes:
-      - /home/jackieriz/data/mariadb:/var/lib/mysql
+      - volume_mariadb:/var/lib/mysql
     ports:
       - "3306:3306"
     networks:
@@ -26,11 +40,27 @@ services:
       - mariadb
     ports:
       - "9000:9000"
+    volumes:
+      - volume_wordpress:/var/www/html
     env_file:
       - "./.env"
     networks:
       - docker-network
 
+  nginx:
+    container_name: nginx
+    build: ./requirements/nginx
+    restart: always
+    depends_on:
+      - wordpress
+    ports:
+      - "443:443"
+    volumes:
+      - volume_wordpress:/var/www/html
+    env_file:
+      - "./.env"
+    networks:
+      - docker-network
 
 networks:
   docker-network:
