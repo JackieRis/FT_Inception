@@ -1,19 +1,14 @@
 #!/bin/bash
 
-# Set the database root password
-if [ -n "$MYSQL_ROOT_PWD" ]; then
-  mysqladmin password "$MYSQL_ROOT_PWD"
-fi
+service mysql start
 
-# Create a new database user
-if [ -n "$WP_DATABASE_USR" ] && [ -n "$WP_DATABASE_PWD" ]; then
-  mysql -e "CREATE USER '$WP_DATABASE_USR'@'%' IDENTIFIED BY '$WP_DATABASE_PWD';" && \
-  mysql -e "GRANT ALL PRIVILEGES ON *.* TO '$WP_DATABASE_USR'@'%';" && \
-  mysql -e "FLUSH PRIVILEGES;"
-  mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PWD}';" > db.sql
-fi
+mysql -hlocalhost <<EOF
+CREATE DATABASE IF NOT EXISTS ${WP_DATABASE_NAME};
+CREATE USER IF NOT EXISTS ${WP_DATABASE_USR}@'%' IDENTIFIED BY '${WP_DATABASE_PWD}';
+GRANT ALL PRIVILEGES ON ${WP_DATABASE_NAME}.* TO jackieriz@'%';
+FLUSH PRIVILEGES;
+EOF
 
-service mysql start && mysql < db.sql
+service mysql stop
 
-# Start the MariaDB server
-exec /usr/bin/mysqld_safe --datadir="/var/lib/mysql"
+/usr/bin/mysqld_safe

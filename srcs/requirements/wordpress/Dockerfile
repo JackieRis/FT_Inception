@@ -5,16 +5,21 @@ EXPOSE 9000
 RUN mkdir /var/www/
 RUN mkdir -p /var/run/ && mkdir /run/php
 
-RUN apt-get update -y && apt-get install -y php7.3 php-mysqli php-fpm wget mariadb-client
+RUN apt-get update -y && apt-get install -y php7.3 php-mysqli php-fpm wget mariadb-client wget curl sendmail
+
+RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
+	chmod +x wp-cli.phar && \
+	mv wp-cli.phar /usr/local/bin/wp
 
 RUN cd /var/www/ && wget http://fr.wordpress.org/latest-fr_FR.tar.gz && \
-	tar -xzvf latest-fr_FR.tar.gz && rm latest-fr_FR.tar.gz
-RUN mv /var/www/wordpress/ /var/www/html
+	mkdir /var/www/wordpress && tar -xzvf latest-fr_FR.tar.gz && rm latest-fr_FR.tar.gz
 
-COPY ./config/www.conf /etc/php/7.3/fpm/pool.d/
-RUN	chown -R www-data:www-data /var/www/html
-RUN chmod -R -wx,u+rwX,g+rX,o+rX /var/www/html
+#COPY ./config/wp-config.php /var/www/wordpress/wp-config.php
+COPY ./tools/wp_entrypoint.sh /
+COPY ./config/www.conf /etc/php/7.3/fpm/pool.d/www.conf
 
-COPY ./config/wp-config.php ./wp-config.php
+RUN chown -Rv www-data: /var/www/
 
-CMD [ "/usr/sbin/php-fpm7.3", "-F" ]
+WORKDIR /var/www/wordpress
+
+ENTRYPOINT [ "bash", "/wp_entrypoint.sh" ]

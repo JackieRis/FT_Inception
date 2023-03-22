@@ -9,7 +9,6 @@ RUN openssl req -newkey rsa:4096 -x509 -sha256 -days 365 \
 	-subj "/C=FR/ST=Paris/L=Paris/O=42 School/OU=jackieriz/CN=jackieriz.42.fr"
 
 COPY ./conf/default /etc/nginx/conf.d/nginx.conf
-RUN ln -s /etc/nginx/conf.d/nginx.conf /etc/nginx/sites-enabled/
 
 RUN mkdir -p /run/nginx
 
